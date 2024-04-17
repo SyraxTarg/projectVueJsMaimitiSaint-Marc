@@ -1,10 +1,29 @@
 <script setup>
 // récupérer le store de l'utilisateur courant
+import { ref } from 'vue';
+import { useNotesStore } from '@/stores/notes'
+import { storeToRefs } from 'pinia'
+
+import { useCurrentUserStore } from '@/stores/currentUser';
+
+const userStore = useCurrentUserStore()
+const {  user, getCurrentUserId, getCurrentUser } = storeToRefs(userStore)
+console.log(user.value.id)
+const username = ref('')
+username.value = user.value.username;
+const email = ref('')
+email.value = user.value.email
+const bio = ref('')
+bio.value = user.value.bio
 
 // declarer les variables user qui vient du store
 
 
 // fonction pour modifier les informations de l'utilisateur
+
+async function updateUser(){
+  await userStore.updateInfo(username.value, email.value, bio.value)
+}
 
   // appeler la fonction appeler la fonction updateInfo du store
 
@@ -14,7 +33,7 @@
   <div class="min-h-screen bg-base-200">
     <div class="flex-col lg:flex-row-reverse">
       <div class="text-center lg:text-left">
-        <h1 class="text-5xl font-bold">Profile</h1>
+        <h1 class="text-5xl font-bold">Profile: {{ username }}</h1>
 
         <div class="flex flex-col w-full lg:flex-row">
           <div class="grid flex-grow h-32 card rounded-box place-items-center">
@@ -37,6 +56,7 @@
                       type="text"
                       class="grow"
                       placeholder="Username"
+                      v-model=username
                     />
                   </label>
                   <label class="input input-bordered flex items-center gap-2">
@@ -57,15 +77,17 @@
                       type="text"
                       class="grow"
                       placeholder="email"
+                      v-model="email"
                     />
                   </label>
                   <textarea
                     class="textarea textarea-bordered"
                     placeholder="Bio"
+                    v-model="bio"
                   ></textarea>
 
                   <div class="card-actions justify-end">
-                    <button class="btn btn-primary">Modifier</button>
+                    <button class="btn btn-primary" @click="userStore.updateInfo(username, email, bio)">Modifier</button>
                   </div>
                 </form>
               </div>

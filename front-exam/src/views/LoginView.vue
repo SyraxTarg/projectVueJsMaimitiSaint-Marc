@@ -1,11 +1,24 @@
 <script setup>
+
+import { ref } from 'vue';
 // récupérer le store utilisateur
 
-// déclarer les variables email et password
+import { useCurrentUserStore } from '@/stores/currentUser'
+import { storeToRefs } from 'pinia'
+
+const store = useCurrentUserStore()
+const { currentUser, getUsersLength } = storeToRefs(store)
+const { inscription, login, setCurrentUser, updateInfo } = store
+
+// déclarer les variables username, password et email
+const password = ref('')
+const email = ref('')
+
 
 // fonction pour soumettre le formulaire
-
-  // dans la fonction appeler la fonction login du store
+async function submitLogin(){
+   await login(email.value, password.value)
+}
 
 </script>
 
@@ -20,7 +33,7 @@
         </p>
       </div>
       <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-        <form class="card-body">
+        <form class="card-body" @submit.prevent="submitLogin">
           <div class="form-control">
             <label class="label">
               <span class="label-text">Email</span>
@@ -29,6 +42,7 @@
               type="email"
               placeholder="email"
               class="input input-bordered"
+              v-model="email"
               required
             />
           </div>
@@ -40,11 +54,17 @@
               type="password"
               placeholder="password"
               class="input input-bordered"
+              v-model="password"
               required
             />
           </div>
           <div class="form-control mt-6">
-            <button class="btn btn-primary">Login</button>
+            <router-link
+              to="/home"
+              >
+                 <button class="btn btn-primary" @click="submitLogin(email, password)">Login</button>
+            </router-link>
+            
           </div>
         </form>
       </div>

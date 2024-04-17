@@ -7,32 +7,98 @@ export const useNotesStore = defineStore('notes', {
     notes: []
   }),
 
-  getters: {},
+  getters: {
+    getNotes: (state) => {
+      return state.notes
+    }
+  },
 
   actions: {
-    getAllNotes() {
+    getAllNotes(userId) {
       const store = useCurrentUserStore()
       const { token, user } = storeToRefs(store)
-
-      // ici on fait une requête GET pour récupérer toutes les notes de l'utilisateur
+      // const id = userId.value
+    
+      fetch(`http://localhost:3000/users/${user.value.id}/notes`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token.value}`
+        }
+      })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch notes')
+        }
+        return res.json()
+      }).then ((data) => {
+        this.notes = data
+      })
+      .catch((err) => {
+        console.error(err)
+      })
     },
+    
     createNote(note) {
       const store = useCurrentUserStore()
       const { token, user } = storeToRefs(store)
 
-      // ici on fait une requête POST pour créer une nouvelle note
+      fetch('http://localhost:3000/users/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.value}`
+        },
+        body: JSON.stringify({
+            "userId": user.value.id,
+            "title": note.title,
+            "content": note.content
+        })
+      })
+        .then((res) => console.log("note cree"))
+        .catch((err) => {
+          console.error(err)
+        })
+      console.log(note.title + " enregistre")
     },
-    updateNote(note) {
+    updateNote(id, title, content) {
       const store = useCurrentUserStore()
-      const { token } = storeToRefs(store)
+      const { token, user } = storeToRefs(store)
 
-      // ici on fait une requête PATCH pour mettre à jour une note
+      // exemple de requete avec le token
+      fetch(`http://localhost:3000/users/${user.value.id}/notes/${id}`,{
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.value}`
+        },
+        body: JSON.stringify({
+          "title": title,
+          "content": content,
+        })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          this.note = data.note
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     },
-    deleteNote(note) {
+    deleteNote(id) {
       const store = useCurrentUserStore()
-      const { token } = storeToRefs(store)
+      const { token, user } = storeToRefs(store)
 
-      // ici on fait une requête DELETE pour supprimer une note
+      fetch(`http://localhost:3000/users/${user.value.id}/notes/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.value}`
+        }
+      })
+        .then((res) => console.log("note effacee"))
+        .catch((err) => {
+          console.error(err)
+        })
     }
   },
 

@@ -7,20 +7,63 @@ export const useCurrentUserStore = defineStore('currentUser', {
     token: null
   }),
 
-  getters: {},
+  getters: {
+    getCurrentUser: (state) => {
+      return state
+    },
+    getCurrentUsername: (state) => {
+      return state.user.username
+    },
+    getCurrentUserId: (state) => {
+      return state.user.id
+    }
+  },
 
   actions: {
     inscription(username, email, password) {
-      // ici on fait une requête POST pour créer un nouvel utilisateur
+      console.log(username)
+      fetch('http://localhost:3000/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            "username": username,
+            "email": email,
+            "password": password
+        })
+      })
+        .then((res) => console.log("user cree"))
+        .catch((err) => {
+          console.error(err)
+        })
+      console.log(username + " enregistre")
     },
     login(email, password) {
-      // ici on fait une requête POST pour se connecter
+      fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            "email": email,
+            "password": password
+        })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data)
+          this.setCurrentUser(data)
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     },
     setCurrentUser(data) {
       this.user = data.user
       this.token = data.token
     },
-    updateInfo(data) {
+    updateInfo(username, email, bio) {
       // exemple de requete avec le token
       fetch('http://localhost:3000/users/' + this.user.id, {
         method: 'PATCH',
@@ -29,7 +72,9 @@ export const useCurrentUserStore = defineStore('currentUser', {
           Authorization: 'Bearer ' + this.token
         },
         body: JSON.stringify({
-          // ici on envoie les données à mettre à jour
+          "bio": bio,
+          "username": username,
+          "email": email,
         })
       })
         .then((res) => res.json())

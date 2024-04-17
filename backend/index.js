@@ -33,6 +33,9 @@ function authenticateToken(req, res, next) {
 
 app.post('/signup', async (req, res) => {
     const { username, email, password } = req.body;
+    console.log(username)
+    console.log(email)
+    console.log(password)
     const hashedPassword = await bcrypt.hash(password, 10);
 
     db.run("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [username, email, hashedPassword], function(err) {
@@ -91,7 +94,7 @@ app.post('/users/notes', authenticateToken, (req, res) => {
 });
 
 // GET pour lire toutes les notes d'un utilisateur
-app.get('/users/:userId/notes', (req, res) => {
+app.get('/users/:userId/notes', authenticateToken, (req, res) => {
     const userId = req.params.userId;
     db.all("SELECT * FROM notes WHERE user_id = ?", [userId], (err, rows) => {
         if (err) {
@@ -103,7 +106,7 @@ app.get('/users/:userId/notes', (req, res) => {
 });
 
 // PUT pour mettre à jour une note spécifique
-app.put('/users/:userId/notes/:noteId', (req, res) => {
+app.put('/users/:userId/notes/:noteId', authenticateToken, (req, res) => {
     const { userId, noteId } = req.params;
     const { title, content } = req.body;
     db.run("UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?", [title, content, noteId, userId], function(err) {
@@ -120,7 +123,7 @@ app.put('/users/:userId/notes/:noteId', (req, res) => {
 });
 
 // DELETE pour supprimer une note spécifique
-app.delete('/users/:userId/notes/:noteId', (req, res) => {
+app.delete('/users/:userId/notes/:noteId', authenticateToken, (req, res) => {
     const { userId, noteId } = req.params;
     db.run("DELETE FROM notes WHERE id = ? AND user_id = ?", [noteId, userId], function(err) {
         if (err) {

@@ -1,11 +1,40 @@
 <script setup>
+
+import NoteForm from '@/components/NoteForm.vue';
 // récupérer le store des notes
 
-// recuperer les notes
+import { onMounted, ref, onBeforeMount } from 'vue';
+// récupérer le store utilisateur
+
+import { useNotesStore } from '@/stores/notes'
+import { storeToRefs } from 'pinia'
+
+const store = useNotesStore()
+const { notes, getNotes } = storeToRefs(store)
+store.getAllNotes()
+
+
+import { useCurrentUserStore } from '@/stores/currentUser'
+
+
+const userStore = useCurrentUserStore()
+const {  user, getCurrentUserId, getCurrentUser } = storeToRefs(userStore)
+
+const notesList = ref([])
+onBeforeMount(async () => {
+    const id = await getCurrentUserId
+    console.log(id.value)
+    notesList.value = await store.getAllNotes()
+})
+
+
+function addNote(note) {
+  store.createNote(note)
+}
 </script>
 
 <template>
-  <NoteForm />
+  <NoteForm @addNote="addNote"/>
 
   <div class="container mx-auto mt-8">
     <div class="flex flex-col">
@@ -36,16 +65,16 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr>
+                <tr v-for="note in notes" :key="note.id">
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900"></div>
+                    <div class="text-sm text-gray-900"><input type="text" :value="note.title"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900"></div>
+                    <div class="text-sm text-gray-900"><input type="text" :value="note.content"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button  class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                    <button  class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                    <button class="text-indigo-600 hover:text-indigo-900" @click="store.updateNote(note.id, note.title,note.content)">Edit</button>
+                    <button class="text-red-600 hover:text-red-900 ml-4" @click="store.deleteNote(note.id)">Delete</button>
                   </td>
                 </tr>
               </tbody>

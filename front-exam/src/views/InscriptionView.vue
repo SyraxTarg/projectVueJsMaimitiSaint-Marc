@@ -1,12 +1,27 @@
 <script setup>
 
+import { ref } from 'vue';
 // récupérer le store utilisateur
 
+import { useCurrentUserStore } from '@/stores/currentUser'
+import { storeToRefs } from 'pinia'
+
+const store = useCurrentUserStore()
+const { currentUser, getUsersLength } = storeToRefs(store)
+const { inscription, login, setCurrentUser, updateInfo } = store
+
 // déclarer les variables username, password et email
+const username = ref('')
+const password = ref('')
+const email = ref('')
+
 
 // fonction pour soumettre le formulaire
+async function submitForm(){
+  await inscription(username.value, email.value, password.value)
+}
 
-  // dans la fonction appeler la fonction createUser du store
+// dans la fonction appeler la fonction createUser du store
 
 </script>
 
@@ -18,7 +33,7 @@
         <p class="py-6">Inscrivez vous pour accéder à notre plateforme</p>
       </div>
       <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-        <form class="card-body">
+        <form class="card-body" @submit.prevent="submitForm">
           <div class="form-control">
             <label class="label">
               <span class="label-text">Username</span>
@@ -27,6 +42,7 @@
               type="username"
               placeholder="username"
               class="input input-bordered"
+              v-model="username"
               required
             />
           </div>
@@ -38,6 +54,7 @@
               type="email"
               placeholder="email"
               class="input input-bordered"
+              v-model="email"
               required
             />
           </div>
@@ -49,11 +66,16 @@
               type="password"
               placeholder="password"
               class="input input-bordered"
+              v-model="password"
               required
             />
           </div>
           <div class="form-control mt-6">
-            <button class="btn btn-primary">Login</button>
+            <router-link
+              to="/login"
+              >
+              <button class="btn btn-primary" @click="submitForm(username, email, password)">Login</button>
+            </router-link>
           </div>
         </form>
       </div>
