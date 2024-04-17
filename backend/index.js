@@ -79,7 +79,7 @@ app.patch('/users/:id', authenticateToken, (req, res) => {
 });
 
 // POST pour créer une nouvelle note
-app.post('/users/notes', (req, res) => {
+app.post('/users/notes', authenticateToken, (req, res) => {
     const { userId, title, content } = req.body;
     db.run("INSERT INTO notes (user_id, title, content) VALUES (?, ?, ?)", [userId, title, content], function(err) {
         if (err) {
