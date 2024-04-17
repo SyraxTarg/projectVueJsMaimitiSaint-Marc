@@ -21,20 +21,20 @@ db.run("CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, user_id INTEGE
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    
+
     if (token == null) return res.sendStatus(401);
-    
+
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403);
-      req.user = user;
-      next();
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
     });
-  }
+}
 
 app.post('/signup', async (req, res) => {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     db.run("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [username, email, hashedPassword], function(err) {
         if (err) {
             console.log(err);
@@ -58,7 +58,7 @@ app.post('/login', (req, res) => {
             res.status(401).send('Credentials are wrong');
         }
     });
-    
+
 });
 
 app.patch('/users/:id', authenticateToken, (req, res) => {
@@ -81,7 +81,6 @@ app.patch('/users/:id', authenticateToken, (req, res) => {
 // POST pour créer une nouvelle note
 app.post('/users/notes', (req, res) => {
     const { userId, title, content } = req.body;
-    console.log(req.body);
     db.run("INSERT INTO notes (user_id, title, content) VALUES (?, ?, ?)", [userId, title, content], function(err) {
         if (err) {
             console.log(err);
@@ -103,27 +102,11 @@ app.get('/users/:userId/notes', (req, res) => {
     });
 });
 
-// GET pour lire une note spécifique
-app.get('/users/:userId/notes/:noteId', (req, res) => {
-    const { noteId } = req.params;
-    db.get("SELECT * FROM notes WHERE id = ? AND user_id = ?", [noteId, getUserIdFromRequest(req)], (err, row) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).send('Error retrieving the note');
-        }
-        if (row) {
-            res.send(row);
-        } else {
-            res.status(404).send('Note not found');
-        }
-    });
-});
-
 // PUT pour mettre à jour une note spécifique
 app.put('/users/:userId/notes/:noteId', (req, res) => {
-    const { noteId } = req.params;
+    const { userId, noteId } = req.params;
     const { title, content } = req.body;
-    db.run("UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?", [title, content, noteId, getUserIdFromRequest(req)], function(err) {
+    db.run("UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?", [title, content, noteId, userId], function(err) {
         if (err) {
             console.log(err);
             return res.status(500).send('Error updating the note');
@@ -138,8 +121,8 @@ app.put('/users/:userId/notes/:noteId', (req, res) => {
 
 // DELETE pour supprimer une note spécifique
 app.delete('/users/:userId/notes/:noteId', (req, res) => {
-    const { noteId } = req.params;
-    db.run("DELETE FROM notes WHERE id = ? AND user_id = ?", [noteId, getUserIdFromRequest(req)], function(err) {
+    const { userId, noteId } = req.params;
+    db.run("DELETE FROM notes WHERE id = ? AND user_id = ?", [noteId, userId], function(err) {
         if (err) {
             console.log(err);
             return res.status(500).send('Error deleting the note');
@@ -153,5 +136,5 @@ app.delete('/users/:userId/notes/:noteId', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
